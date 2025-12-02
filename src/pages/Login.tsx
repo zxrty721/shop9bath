@@ -35,7 +35,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f4f8] p-4 relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-600 to-blue-500 rounded-b-[3rem] shadow-xl z-0"></div>
+      <div className="absolute top-0 left-0 w-full h-96 bg-linear-to-b from-blue-600 to-blue-500 rounded-b-[3rem] shadow-xl z-0"></div>
 
       <div className="bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-[400px] z-10 border border-white/50 animate-fade-in">
         <div className="text-center mb-8 mt-2">

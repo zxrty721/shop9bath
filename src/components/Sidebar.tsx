@@ -14,7 +14,7 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
     // ⚠️ ลบ fixed ออก เปลี่ยนเป็น h-full เพื่อให้ยืดเต็มความสูงของ Container แม่
     <aside className="w-72 bg-white border-r border-slate-100 h-full flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       {/* Logo Area */}
-      <div className="p-8 pb-6 flex-shrink-0">
+      <div className="p-8 pb-6 shrink-0">
         <div className="flex items-center gap-3.5">
           <img src="/og-9bath.svg" alt="Logo" className="w-10 h-10 drop-shadow-sm hover:scale-105 transition-transform" />
           <div>
@@ -42,7 +42,7 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Icon size={18} className={`transition-colors flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                <Icon size={18} className={`transition-colors shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`} />
                 {item.label}
               </button>
             )
@@ -51,9 +51,9 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
       </div>
 
       {/* User Profile Footer (Fixed at bottom) */}
-      <div className="p-4 m-4 bg-slate-50/80 rounded-2xl border border-slate-100 backdrop-blur-sm flex-shrink-0">
+      <div className="p-4 m-4 bg-slate-50/80 rounded-2xl border border-slate-100 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-sm text-sm flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-blue-600 font-bold shadow-sm text-sm shrink-0">
             {username.charAt(0).toUpperCase()}
           </div>
           <div className="overflow-hidden">

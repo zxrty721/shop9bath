@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
 import { type Product } from '../types';
-import { Plus, Trash2, X, Image as ImageIcon, Search } from 'lucide-react';
+import { Plus, Trash2, X, Image as ImageIcon } from 'lucide-react';
 
 export default function ProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
