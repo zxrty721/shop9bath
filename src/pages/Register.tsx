@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../api';
-import { UserPlus, User, Lock, Briefcase, BadgeCheck, ArrowLeft } from 'lucide-react';
+import api from '../api'; // ✅ ใช้ api ตัวกลาง
+import { User, Lock, Briefcase, BadgeCheck, ArrowLeft, AlertCircle } from 'lucide-react';
+import AlertModal from '../components/ui/AlertModal';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -14,6 +15,15 @@ export default function Register() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'success' | 'error' | 'info';
+  }>({
+    isOpen: false, title: '', message: '', variant: 'success'
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -24,146 +34,89 @@ export default function Register() {
     setError('');
     
     try {
-      // จำลอง Delay นิดหน่อยให้ดูเหมือนประมวลผล (ลบได้ถ้าไม่ชอบ)
-      await new Promise(r => setTimeout(r, 800));
-      
       await api.post('/register', formData);
-      alert('🎉 สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-      navigate('/');
+      
+      setAlertConfig({
+        isOpen: true,
+        title: 'สมัครสมาชิกสำเร็จ! 🎉',
+        message: 'บัญชีของคุณถูกสร้างเรียบร้อยแล้ว\nกรุณาเข้าสู่ระบบเพื่อเริ่มต้นใช้งาน',
+        variant: 'success'
+      });
+
     } catch (err: any) {
-      setError(err.response?.data?.error || 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCloseAlert = () => {
+    setAlertConfig({ ...alertConfig, isOpen: false });
+    if (alertConfig.variant === 'success') {
+      navigate('/'); // ✅ กลับไปหน้า Login เมื่อสำเร็จ
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-600 to-cyan-400 p-4">
-      <div className="bg-white/95 p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 hover:scale-[1.01]">
-        
-        {/* Header */}
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 font-prompt p-4">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-indigo-600/20 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+      </div>
+
+      <div className="bg-white/95 p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md z-10 border border-white/20 animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4 shadow-inner">
-            <UserPlus size={32} />
+          <div className="w-16 h-16 bg-linear-to-br from-indigo-600 to-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl mx-auto mb-4 transform hover:scale-105 transition-transform">
+            NC
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-800">สร้างบัญชีใหม่</h2>
-          <p className="text-gray-500 text-sm mt-2">กรอกข้อมูลเพื่อเริ่มต้นใช้งานระบบ Shop 9 Baht</p>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Create Account</h2>
+          <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest font-semibold">NINECORE REGISTRATION</p>
         </div>
 
-        {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-6 text-sm flex items-center animate-pulse">
-            <span className="mr-2">⚠️</span> {error}
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6 font-medium flex items-center gap-2 animate-pulse">
+            <AlertCircle size={18} /> {error}
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-5">
-          
-          {/* Fullname Input */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">ชื่อ-นามสกุล</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                <BadgeCheck size={20} />
-              </div>
-              <input
-                type="text"
-                name="fullname"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="สมชาย ใจดี"
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div className="relative group">
+            <BadgeCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors z-10" size={20} />
+            <input type="text" name="fullname" value={formData.fullname} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 focus:bg-white transition-all font-medium text-slate-700" placeholder="ชื่อ-นามสกุล (Fullname)" onChange={handleChange} required />
           </div>
-
-          {/* Username Input */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">ชื่อผู้ใช้ (Username)</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                <User size={20} />
-              </div>
-              <input
-                type="text"
-                name="username"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="somchai01"
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <div className="relative group">
+            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors z-10" size={20} />
+            <input type="text" name="username" value={formData.username} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 focus:bg-white transition-all font-medium text-slate-700" placeholder="ชื่อผู้ใช้ (Username)" onChange={handleChange} required />
           </div>
-
-          {/* Password Input */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">รหัสผ่าน</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                <Lock size={20} />
-              </div>
-              <input
-                type="password"
-                name="password"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
-                placeholder="••••••••"
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <div className="relative group">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors z-10" size={20} />
+            <input type="password" name="password" value={formData.password} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 focus:bg-white transition-all font-medium text-slate-700" placeholder="รหัสผ่าน (Password)" onChange={handleChange} required />
           </div>
-
-          {/* Role Select */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">ตำแหน่ง</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                <Briefcase size={20} />
-              </div>
-              <select
-                name="role"
-                className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white appearance-none cursor-pointer"
-                onChange={handleChange}
-              >
-                <option value="staff">พนักงานทั่วไป (Staff)</option>
-                <option value="admin">ผู้จัดการ (Admin)</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+          <div className="relative group">
+            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors z-10" size={20} />
+            <select name="role" value={formData.role} className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 focus:bg-white transition-all font-medium text-slate-700 appearance-none cursor-pointer" onChange={handleChange}>
+              <option value="staff">Staff (เจ้าหน้าที่)</option>
+              <option value="manager">Manager (ผู้จัดการ)</option>
+              <option value="director">Director (ผู้อำนวยการ)</option>
+            </select>
           </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full flex justify-center items-center bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform transition hover:-translate-y-0.5 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                กำลังสมัครสมาชิก...
-              </>
-            ) : (
-              'ยืนยันการสมัคร'
-            )}
+          <button type="submit" disabled={isLoading} className={`w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-black transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-6 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-xl'}`}>
+            {isLoading ? 'กำลังบันทึก...' : 'ยืนยันการสมัคร'}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="mt-8 text-center border-t pt-6">
-          <Link to="/" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
-            <ArrowLeft size={16} className="mr-1" /> กลับไปหน้าเข้าสู่ระบบ
+        <div className="mt-8 text-center border-t border-slate-100 pt-6">
+          <Link to="/" className="inline-flex items-center text-sm font-bold text-slate-600 hover:text-indigo-600 transition-colors group">
+            <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" /> กลับไปหน้าเข้าสู่ระบบ
           </Link>
         </div>
-
       </div>
+
+      <AlertModal isOpen={alertConfig.isOpen} onClose={handleCloseAlert} title={alertConfig.title} message={alertConfig.message} variant={alertConfig.variant} />
     </div>
   );
 }
