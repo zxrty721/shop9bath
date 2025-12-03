@@ -9,15 +9,9 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  // 2. เพิ่มส่วน resolve alias
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    chunkSizeWarningLimit: 1000,
-    target: 'es2022',
-    minify: 'esbuild',
-  }
 })
