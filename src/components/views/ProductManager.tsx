@@ -437,6 +437,18 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
               <div className="p-6 md:p-8 grid grid-cols-1 gap-8">
                 <div className="space-y-4">
                   <InputGroup
+                    label="รหัสสินค้า (product_code)"
+                    icon={Tag}
+                    value={formData.product_code}
+                    onChange={(v: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        product_code: v,
+                      }))
+                    }
+                    placeholder="เช่น C001"
+                  />
+                  <InputGroup
                     label="ชื่อสินค้า"
                     icon={Package}
                     value={formData.product_name}
