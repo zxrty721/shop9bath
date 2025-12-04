@@ -13,9 +13,9 @@ api.interceptors.response.use(
       // ✅ เช็คก่อน: ถ้าเราไม่ได้อยู่ที่หน้า Login (/) ค่อยดีด
       // ถ้าอยู่ที่หน้า Login อยู่แล้ว ให้ปล่อยผ่าน (เพื่อให้หน้า Login โชว์ Error ตัวแดง)
       if (window.location.pathname !== '/') {
-         console.warn("Session expired. Redirecting to login...");
-         localStorage.clear();
-         window.location.href = '/'; 
+        console.warn('Session expired. Redirecting to login...');
+        localStorage.clear();
+        window.location.href = '/';
       }
     }
     return Promise.reject(error);

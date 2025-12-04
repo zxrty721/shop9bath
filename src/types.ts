@@ -27,7 +27,7 @@ export interface OrderItem {
   product_name: string | null;
   price: number;
   quantity: number;
-  created_at?: string | null;
+  created_at: string | null;
 }
 
 export interface Order {
@@ -48,4 +48,10 @@ export interface DashboardStats {
   today_sales: number;
   monthly_sales: number;
   yearly_sales: number;
+}
+
+/** response ใหม่จาก /orders (backend ตัวล่าสุด) */
+export interface OrdersResponse {
+  orders: Order[];
+  total_amount: number;
 }
