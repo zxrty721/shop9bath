@@ -1,4 +1,5 @@
 import { LogOut, X } from 'lucide-react';
+import logo from '/og-9bath.jfif';
 
 interface SidebarProps {
   activeTab: string;
@@ -7,14 +8,14 @@ interface SidebarProps {
   userRole: string;
   username: string;
   onLogout: () => void;
-  isOpen: boolean;      // ✅ รับสถานะเปิด/ปิด
-  onClose: () => void;  // ✅ รับฟังก์ชันปิด
+  isOpen: boolean;      // รับสถานะเปิด/ปิด (สำหรับมือถือ)
+  onClose: () => void;  // รับฟังก์ชันปิด (สำหรับมือถือ)
 }
 
 export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, username, onLogout, isOpen, onClose }: SidebarProps) {
   return (
     <>
-      {/* Overlay (Backdrop) สำหรับมือถือ */}
+      {/* Overlay (Backdrop) สำหรับมือถือ: กดที่พื้นหลังเพื่อปิดเมนู */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-slate-900/50 z-30 md:hidden backdrop-blur-sm transition-opacity"
@@ -32,21 +33,27 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
         {/* Brand & Mobile Close Button */}
         <div className="p-6 pb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-linear-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-200 cursor-default">
-              9
+            {/* ✅ LOGO IMAGE: แสดงรูปภาพแทนตัวเลข */}
+            <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-indigo-200/50 border-2 border-white ring-2 ring-indigo-50">
+              <img 
+                src={logo} 
+                alt="Shop9Bath Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Shop9Bath</h1>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Enterprise</p>
+              <h1 className="text-xl font-extrabold text-slate-800 tracking-tight leading-none">Shop9Bath</h1>
+              <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-0.5">Enterprise</p>
             </div>
           </div>
-          {/* ปุ่มปิดแสดงเฉพาะมือถือ */}
-          <button onClick={onClose} className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50">
+          
+          {/* ปุ่มปิด Sidebar (แสดงเฉพาะในมือถือ) */}
+          <button onClick={onClose} className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50 transition-colors">
             <X size={24} />
           </button>
         </div>
 
-        {/* Menu */}
+        {/* Menu List */}
         <div className="flex-1 overflow-y-auto px-4 space-y-1">
           <p className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Menu</p>
           {menuItems.map((item) => {
@@ -57,7 +64,7 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
                 key={item.id}
                 onClick={() => {
                   setActiveTab(item.id);
-                  onClose(); // ✅ เลือกเมนูแล้วปิด Sidebar (บนมือถือ)
+                  onClose(); // ✅ เมื่อเลือกเมนูแล้ว ให้ปิด Sidebar อัตโนมัติ (บนมือถือ)
                 }}
                 className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${
                   isActive 
@@ -75,7 +82,7 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
           })}
         </div>
 
-        {/* Footer Profile */}
+        {/* Footer Profile Section */}
         <div className="p-4 border-t border-slate-100">
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 group hover:border-indigo-100 transition-colors">
             <div className="flex items-center gap-3 mb-3">

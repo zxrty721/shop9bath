@@ -18,7 +18,6 @@ interface OverviewProps {
   loading: boolean;
 }
 
-// แยก Component ย่อยเพื่อลดความซับซ้อน (StatCard)
 const StatCard = ({
   title,
   value,
@@ -48,7 +47,9 @@ const StatCard = ({
             }) || '0'}
           </h3>
         )}
-        <p className="text-xs text-slate-400 font-medium mt-2">{subtitle}</p>
+        <p className="text-xs text-slate-400 font-medium mt-2">
+          {subtitle}
+        </p>
       </div>
       <div
         className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${color} text-white`}
@@ -64,7 +65,17 @@ export default function Overview({ stats, loading }: OverviewProps) {
     'day' | 'month' | 'year' | 'all'
   >('day');
 
-  // ✅ Memoize: คำนวณใหม่เฉพาะเมื่อ stats หรือ salesPeriod เปลี่ยน
+  // helper ปลอดภัย: เผื่อ backend ส่ง field คนละชื่อ
+  const getTotalOrders = () => {
+    const anyStats = stats as any;
+    return (
+      anyStats.total_orders ??
+      anyStats.total_orders_count ??
+      anyStats.orders_count ??
+      0
+    );
+  };
+
   const currentSales = useMemo(() => {
     switch (salesPeriod) {
       case 'day':
@@ -146,7 +157,7 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="จำนวนออเดอร์รวม"
-          value={stats.total_orders}
+          value={getTotalOrders()}
           subtitle="Total Transactions"
           icon={ShoppingBag}
           color="from-blue-500 to-cyan-600 bg-blue-500"
@@ -207,7 +218,9 @@ export default function Overview({ stats, loading }: OverviewProps) {
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center pb-3 border-b border-slate-50">
-              <span className="text-sm text-slate-500">Database Status</span>
+              <span className="text-sm text-slate-500">
+                Database Status
+              </span>
               <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
                 Online / RAM Cached
               </span>
