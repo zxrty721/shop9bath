@@ -7,6 +7,7 @@ import {
   Check,
   Calculator,
   Loader2,
+  PackageX
 } from 'lucide-react';
 import ConfirmModal from '../ui/ConfirmModal';
 import AlertModal from '../ui/AlertModal';
@@ -27,7 +28,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Map<number, CartItem>>(new Map());
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ กันกดซ้ำ
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
   const [alertConfig, setAlertConfig] = useState<{
     isOpen: boolean;
@@ -90,7 +91,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
   };
 
   const handleCheckoutClick = () => {
-    if (cart.size === 0 || isSubmitting) return; // ✅ กันกดซ้ำ
+    if (cart.size === 0 || isSubmitting) return;
     const totalAmount = Array.from(cart.values()).reduce(
       (sum, item) => sum + item.price * item.selectedQty,
       0,
@@ -111,7 +112,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
 
   const processCheckout = async () => {
     if (isSubmitting) return;
-    setIsSubmitting(true); // 🔒 Lock
+    setIsSubmitting(true);
 
     try {
       const itemsPayload = Array.from(cart.values()).map((item) => ({
@@ -138,7 +139,6 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
       });
       setCart(new Map());
 
-      // ✅ แจ้ง Dashboard ให้รีโหลด stats + orders
       if (onDataChange) onDataChange();
     } catch (error: any) {
       setAlertConfig({
@@ -148,7 +148,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
         variant: 'error',
       });
     } finally {
-      setIsSubmitting(false); // 🔓 Unlock
+      setIsSubmitting(false); 
     }
   };
 
@@ -171,23 +171,33 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
     [cart],
   );
 
+  const getProductImage = (product: Product) => {
+    if (!product.product_image || product.product_image === 'no_image.png') {
+        return `https://pub.shop9bath.online/${product.product_code}.webp`;
+    }
+    return `https://pub.shop9bath.online/${product.product_image}`;
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] animate-fade-in gap-6">
+    <div className="flex flex-col h-[calc(100vh-100px)] animate-fade-in gap-6 font-prompt">
+      {/* Header */}
       <div className="flex justify-between items-center shrink-0">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Calculator className="text-indigo-600" /> ขายสินค้า / ตัดสต็อก
+          {/* ✅ เปลี่ยนสีหัวข้อเป็นขาว/ดำ (ไม่ใช่น้ำเงิน) */}
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
+            <Calculator className="text-indigo-600 dark:text-indigo-400" /> ขายสินค้า / ตัดสต็อก
           </h2>
         </div>
         <div className="relative w-64">
           <Search
-            className="absolute left-3 top-2.5 text-slate-400"
+            className="absolute left-3 top-2.5 text-zinc-400"
             size={18}
           />
+          {/* ✅ Input เปลี่ยน bg/border เป็น zinc */}
           <input
             type="text"
             placeholder="ค้นหาสินค้า..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm transition-all focus:ring-2 focus:ring-indigo-100"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm transition-all focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -195,19 +205,16 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-          <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-600">
+        {/* Left: Product Grid */}
+        <div className="flex-1 bg-white dark:bg-black rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800 overflow-hidden flex flex-col transition-colors duration-300">
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 font-bold text-zinc-600 dark:text-zinc-400">
             สินค้าพร้อมขาย ({filteredProducts.length})
           </div>
           <div className="overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredProducts.map((product) => {
               const isSelected = cart.has(product.id);
               const itemInCart = cart.get(product.id);
-
-              // ✅ เลือก URL รูป: ถ้ามี product_image ใช้ไฟล์จาก R2, ถ้าไม่มีก็ fallback ตาม product_code เดิม
-              const imageSrc = product.product_image
-                ? `https://pub.shop9bath.online/${product.product_image}`
-                : `https://pub.shop9bath.online/${product.product_code}.webp`;
+              const imageSrc = getProductImage(product);
 
               return (
                 <div
@@ -215,21 +222,21 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
                   onClick={() => toggleProduct(product)}
                   className={`relative rounded-xl border p-3 flex gap-3 cursor-pointer transition-all ${
                     isSelected
-                      ? 'border-indigo-500 bg-indigo-50/30 shadow-inner ring-1 ring-indigo-500'
-                      : 'border-slate-200 bg-white hover:shadow-md hover:border-indigo-200'
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-zinc-800 shadow-inner ring-1 ring-indigo-500' 
+                      : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:shadow-md hover:border-indigo-200 dark:hover:border-zinc-600'
                   }`}
                 >
                   <div
                     className={`absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center border transition-all z-10 ${
                       isSelected
                         ? 'bg-indigo-500 border-indigo-500 text-white scale-110'
-                        : 'border-slate-300 bg-white scale-100'
+                        : 'border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 scale-100'
                     }`}
                   >
                     {isSelected && <Check size={14} />}
                   </div>
 
-                  <div className="w-20 h-20 bg-slate-100 rounded-lg shrink-0 overflow-hidden">
+                  <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-lg shrink-0 overflow-hidden">
                     <img
                       src={imageSrc}
                       alt={product.product_name}
@@ -238,19 +245,19 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
                       className="w-full h-full object-cover"
                       onError={(e) =>
                         (e.currentTarget.src =
-                          'https://via.placeholder.com/150')
+                          'https://via.placeholder.com/150?text=No+Image')
                       }
                     />
                   </div>
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center relative">
-                    <h4 className="font-bold text-slate-700 truncate pr-6">
+                    <h4 className="font-bold text-zinc-700 dark:text-zinc-200 truncate pr-6">
                       {product.product_name}
                     </h4>
-                    <p className="text-xs text-slate-400 mb-2">
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-2">
                       เหลือ: {product.quantity}
                     </p>
-                    <p className="text-lg font-bold text-indigo-600">
+                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                       ฿{product.price.toLocaleString()}
                     </p>
 
@@ -270,7 +277,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
                               parseInt(e.target.value) || 1,
                             )
                           }
-                          className="w-14 h-9 text-center font-bold text-indigo-600 bg-white border border-indigo-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-14 h-9 text-center font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-950 border border-indigo-200 dark:border-zinc-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
                     )}
@@ -281,28 +288,30 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
           </div>
         </div>
 
-        <div className="w-full lg:w-96 bg-white rounded-2xl shadow-lg border border-slate-100 flex flex-col shrink-0">
-          <div className="p-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <ShoppingCart className="text-indigo-600" /> ตะกร้าสินค้า
+        {/* Right: Cart Panel */}
+        <div className="w-full lg:w-96 bg-white dark:bg-black rounded-2xl shadow-lg border border-zinc-100 dark:border-zinc-800 flex flex-col shrink-0 transition-colors duration-300">
+          <div className="p-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 rounded-t-2xl">
+            <h3 className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+              <ShoppingCart className="text-indigo-600 dark:text-indigo-400" /> ตะกร้าสินค้า
             </h3>
           </div>
+          
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {Array.from(cart.values()).map((item) => (
               <div
                 key={item.id}
-                className="flex justify-between items-center pb-3 border-b border-dashed border-slate-100 last:border-0"
+                className="flex justify-between items-center pb-3 border-b border-dashed border-zinc-100 dark:border-zinc-800 last:border-0"
               >
-                <div className="flex-1">
-                  <p className="font-bold text-slate-700 text-sm truncate">
+                <div className="flex-1 min-w-0 mr-3">
+                  <p className="font-bold text-zinc-700 dark:text-zinc-300 text-sm truncate">
                     {item.product_name}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">
                     {item.selectedQty} x ฿{item.price.toLocaleString()}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-800">
+                <div className="text-right whitespace-nowrap">
+                  <p className="font-bold text-zinc-800 dark:text-zinc-200">
                     ฿{(item.price * item.selectedQty).toLocaleString()}
                   </p>
                   <button
@@ -311,7 +320,7 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
                         products.find((p) => p.id === item.id)!,
                       )
                     }
-                    className="text-[10px] text-red-500 hover:underline mt-1 hover:text-red-700"
+                    className="text-[10px] text-red-500 dark:text-red-400 hover:underline mt-1 hover:text-red-700 dark:hover:text-red-300"
                   >
                     ลบ
                   </button>
@@ -319,29 +328,30 @@ export default function PointOfSale({ onDataChange }: PointOfSaleProps) {
               </div>
             ))}
             {cart.size === 0 && (
-              <div className="text-center text-slate-400 py-10 flex flex-col items-center">
-                <ShoppingCart size={40} className="mb-2 opacity-20" />
+              <div className="text-center text-zinc-400 dark:text-zinc-600 py-10 flex flex-col items-center">
+                <PackageX size={40} className="mb-2 opacity-20" />
                 <p className="text-sm">ตะกร้าว่างเปล่า</p>
               </div>
             )}
           </div>
-          <div className="p-6 bg-slate-50 border-t border-slate-100 rounded-b-2xl">
+          
+          <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 rounded-b-2xl">
             <div className="flex justify-between items-center mb-6">
-              <span className="font-bold text-slate-800 text-lg">
+              <span className="font-bold text-zinc-800 dark:text-zinc-200 text-lg">
                 ยอดสุทธิ
               </span>
-              <span className="font-extrabold text-3xl text-indigo-600">
+              <span className="font-extrabold text-3xl text-indigo-600 dark:text-indigo-400">
                 ฿{totalAmount.toLocaleString()}
               </span>
             </div>
-            {/* ✅ ปุ่ม Checkout เปลี่ยนสถานะ */}
+            
             <button
               onClick={handleCheckoutClick}
               disabled={cart.size === 0 || isSubmitting}
               className={`w-full py-3.5 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] flex justify-center items-center gap-2 ${
                 cart.size === 0 || isSubmitting
-                  ? 'bg-slate-300 cursor-not-allowed shadow-none'
-                  : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl'
+                  ? 'bg-zinc-300 dark:bg-zinc-800 cursor-not-allowed shadow-none'
+                  : 'bg-zinc-900 hover:bg-black dark:bg-indigo-600 dark:hover:bg-indigo-500 hover:shadow-xl'
               }`}
             >
               {isSubmitting ? (

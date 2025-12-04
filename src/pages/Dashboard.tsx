@@ -41,8 +41,6 @@ export default function Dashboard() {
 
   const [activeTab, setActiveTab] = useState<MenuKey>('overview');
   const [globalLoading, setGlobalLoading] = useState(true);
-
-  // ✅ State สำหรับเปิด/ปิด Sidebar บนมือถือ
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [globalData, setGlobalData] = useState<{
@@ -78,8 +76,6 @@ export default function Dashboard() {
 
       if (ordersRes.status === 'fulfilled') {
         const data = ordersRes.value.data;
-
-        // รองรับทั้งแบบ array ตรง ๆ หรือแบบ { orders, total_amount }
         const orders: Order[] = Array.isArray(data)
           ? (data as Order[])
           : ((data as OrdersResponse).orders ?? []);
@@ -121,7 +117,6 @@ export default function Dashboard() {
     pos: {
       label: 'ขายสินค้า (POS)',
       icon: ShoppingCart,
-      // ❗ ไม่ส่ง globalData แล้ว (แก้ error 2322)
       component: <PointOfSale onDataChange={fetchGlobalData} />,
       allowedRoles: ['director', 'manager', 'staff'],
     },
@@ -139,7 +134,6 @@ export default function Dashboard() {
     products: {
       label: 'จัดการคลังสินค้า',
       icon: Package,
-      // ❗ ไม่ส่ง globalData แล้ว (แก้ error 2322)
       component: <ProductManager onDataChange={fetchGlobalData} />,
       allowedRoles: ['director', 'manager', 'staff'],
     },
@@ -165,7 +159,7 @@ export default function Dashboard() {
     const currentMenu = MENU_MAP[activeTab];
     if (!currentMenu || !currentMenu.allowedRoles.includes(userRole)) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-slate-400">
+        <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
           <ShieldAlert size={64} className="mb-4 text-red-400 opacity-50" />
           <h2 className="text-xl font-bold">Access Denied</h2>
         </div>
@@ -175,8 +169,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-[#f8fafc] overflow-hidden font-prompt">
-      {/* ✅ Sidebar (ส่ง props isOpen, onClose ไปด้วย) */}
+    // ✅ Main Container: เพิ่ม dark:bg-slate-950 และ dark:text-slate-200
+    <div className="flex h-screen w-screen bg-[#f4f4f5] dark:bg-[#09090b] dark:text-zinc-200 overflow-hidden font-prompt transition-colors duration-300">
+      
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -190,24 +185,24 @@ export default function Dashboard() {
 
       {/* Main Layout */}
       <div className="flex-1 flex flex-col h-full w-full relative">
-        {/* ✅ Mobile Header (แสดงเฉพาะจอมือถือ) */}
-        <header className="md:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm">
+        {/* ✅ Mobile Header: ปรับสีพื้นหลังและ Border ใน Dark Mode */}
+        <header className="md:hidden h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm transition-colors duration-300">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-linear-to-tr from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
               9
             </div>
-            <span className="font-bold text-slate-800">Shop9Bath</span>
+            <span className="font-bold text-slate-800 dark:text-white">Shop9Bath</span>
           </div>
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <Menu size={24} />
           </button>
         </header>
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-slate-50/50 p-4 md:p-10 pb-20 scroll-smooth">
+        {/* ✅ Content Area: ปรับสีพื้นหลัง Content */}
+        <main className="flex-1 overflow-y-auto bg-zinc-50/50 dark:bg-[#09090b] p-4 md:p-10 pb-20 scroll-smooth transition-colors duration-300">
           {renderContent()}
         </main>
       </div>

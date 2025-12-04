@@ -16,21 +16,7 @@ export default function UserManager() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    action: () => Promise<void>;
-    variant: 'danger' | 'warning' | 'info' | 'success';
-    confirmText?: string;
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    action: async () => {},
-    variant: 'danger',
-  });
+  const [modalConfig, setModalConfig] = useState<any>({ isOpen: false });
 
   const myRole = (localStorage.getItem('role') || 'staff').toLowerCase();
   const currentUsername = localStorage.getItem('username');
@@ -59,98 +45,55 @@ export default function UserManager() {
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
       await api.patch(`/users/${id}/status`, { status: newStatus });
-      // ✅ Optimistic Update
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u)),
       );
     } catch (err: any) {
-      alert(
-        err.response?.data?.error ||
-          'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ',
-      );
+      alert(err.response?.data?.error || 'เกิดข้อผิดพลาด');
     }
   };
 
   const handleDeleteUser = async (id: number) => {
     try {
       await api.delete(`/users/${id}`);
-      // ✅ Optimistic Update
       setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch {
-      alert('ลบไม่สำเร็จ กรุณาลองใหม่');
+      alert('ลบไม่สำเร็จ');
     }
   };
 
-  // 🔐 Helper สำหรับ RBAC ฝั่ง UI
   const normalizeRole = (role?: string | null): string =>
     (role || 'staff').toLowerCase();
 
   const canManageUser = (my: string, target: string): boolean => {
     const me = normalizeRole(my);
     const t = normalizeRole(target);
-
-    if (me === 'director') {
-      // director จัดการได้ทุกคน (ยกเว้นตัวเอง เราเช็คต่างหาก)
-      return true;
-    }
-    if (me === 'manager') {
-      // manager จัดการได้เฉพาะ staff เท่านั้น
-      return t === 'staff';
-    }
-    // staff ห้ามจัดการใครทั้งสิ้น
+    if (me === 'director') return true;
+    if (me === 'manager') return t === 'staff';
     return false;
   };
 
-  const handleActionClick = (
-    id: number,
-    type: 'delete' | 'suspend' | 'fire' | 'active',
-  ) => {
+  const handleActionClick = (id: number, type: 'delete' | 'suspend' | 'fire' | 'active') => {
     const target = users.find((u) => u.id === id);
     if (!target) return;
-
-    // ถ้าไม่มีสิทธิ์จัดการตาม role → ตัดออกเลย
     if (!canManageUser(myRole, target.role || 'staff')) {
       alert('คุณไม่มีสิทธิ์จัดการผู้ใช้งานในระดับสิทธิ์นี้');
       return;
     }
 
     const actions = {
-      delete: {
-        title: 'ลบผู้ใช้งานถาวร?',
-        message: 'ข้อมูลจะหายไปจากระบบทันที',
-        variant: 'danger',
-        confirmText: 'ลบทันที',
-        fn: () => handleDeleteUser(id),
-      },
-      fire: {
-        title: 'ไล่ออก?',
-        message: 'เปลี่ยนสถานะเป็น Terminated',
-        variant: 'danger',
-        confirmText: 'ยืนยัน',
-        fn: () => handleStatusChange(id, 'fired'),
-      },
-      suspend: {
-        title: 'พักงาน?',
-        message: 'ผู้ใช้งานจะเข้าสู่ระบบไม่ได้ชั่วคราว',
-        variant: 'warning',
-        confirmText: 'พักงาน',
-        fn: () => handleStatusChange(id, 'suspended'),
-      },
-      active: {
-        title: 'คืนสภาพ?',
-        message: 'ผู้ใช้งานจะกลับมาใช้งานได้ปกติ',
-        variant: 'success',
-        confirmText: 'คืนสภาพ',
-        fn: () => handleStatusChange(id, 'active'),
-      },
-    } as const;
+      delete: { title: 'ลบผู้ใช้งานถาวร?', message: 'ข้อมูลจะหายไปจากระบบทันที', variant: 'danger', confirmText: 'ลบทันที', fn: () => handleDeleteUser(id) },
+      fire: { title: 'ไล่ออก?', message: 'เปลี่ยนสถานะเป็น Terminated', variant: 'danger', confirmText: 'ยืนยัน', fn: () => handleStatusChange(id, 'fired') },
+      suspend: { title: 'พักงาน?', message: 'ผู้ใช้งานจะเข้าสู่ระบบไม่ได้ชั่วคราว', variant: 'warning', confirmText: 'พักงาน', fn: () => handleStatusChange(id, 'suspended') },
+      active: { title: 'คืนสภาพ?', message: 'ผู้ใช้งานจะกลับมาใช้งานได้ปกติ', variant: 'success', confirmText: 'คืนสภาพ', fn: () => handleStatusChange(id, 'active') },
+    };
 
     const config = actions[type];
     setModalConfig({
       isOpen: true,
       title: config.title,
       message: config.message,
-      variant: config.variant as any,
+      variant: config.variant,
       confirmText: config.confirmText,
       action: config.fn,
     });
@@ -158,31 +101,23 @@ export default function UserManager() {
 
   const filteredUsers = useMemo(
     () =>
-      users.filter((u) => {
-        const name = u.username || '';
-        const full = u.fullname || '';
-        const term = searchTerm.toLowerCase();
-        return (
-          name.toLowerCase().includes(term) ||
-          full.toLowerCase().includes(term)
-        );
-      }),
+      users.filter((u) =>
+        (u.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.fullname || '').toLowerCase().includes(searchTerm.toLowerCase())
+      ),
     [users, searchTerm],
   );
 
   const RoleBadge = ({ role }: { role: string }) => {
     const r = normalizeRole(role);
     const badgeColors: Record<string, string> = {
-      director: 'bg-purple-100 text-purple-700 border-purple-200',
-      manager: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-      staff: 'bg-slate-100 text-slate-600 border-slate-200',
+      director: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+      manager: 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800',
+      // ✅ เปลี่ยน Staff เป็นสีเทา (Zinc)
+      staff: 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700',
     };
     return (
-      <span
-        className={`px-2.5 py-1 rounded-md text-xs font-bold border capitalize ${
-          badgeColors[r] || badgeColors.staff
-        }`}
-      >
+      <span className={`px-2.5 py-1 rounded-md text-xs font-bold border capitalize ${badgeColors[r] || badgeColors.staff}`}>
         {r}
       </span>
     );
@@ -190,183 +125,107 @@ export default function UserManager() {
 
   const StatusBadge = ({ status }: { status: string }) => {
     const s = (status || 'active').toLowerCase();
-    const statusConfig: Record<
-      string,
-      { cls: string; text: string }
-    > = {
-      fired: {
-        cls: 'bg-red-100 text-red-700 border-red-200',
-        text: 'Terminated',
-      },
-      suspended: {
-        cls: 'bg-orange-100 text-orange-700 border-orange-200',
-        text: 'Suspended',
-      },
-      active: {
-        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-        text: 'Active',
-      },
+    const statusConfig: Record<string, { cls: string; text: string }> = {
+      fired: { cls: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800', text: 'Terminated' },
+      suspended: { cls: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800', text: 'Suspended' },
+      active: { cls: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800', text: 'Active' },
     };
     const conf = statusConfig[s] || statusConfig.active;
     return (
-      <span
-        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${conf.cls}`}
-      >
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${conf.cls}`}>
         {conf.text}
       </span>
     );
   };
 
-  if (loading)
-    return (
-      <div className="p-12 text-center text-slate-400 animate-pulse">
-        Loading...
-      </div>
-    );
+  if (loading) return <div className="p-12 text-center text-zinc-400 dark:text-zinc-500 animate-pulse">Loading...</div>;
   if (!isAuthorized)
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center animate-fade-in">
-        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-          <Lock className="text-slate-400" size={32} />
+        <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6">
+          <Lock className="text-zinc-400" size={32} />
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">
-          Access Restricted
-        </h2>
-        <p className="text-slate-500 max-w-md">
-          คุณไม่มีสิทธิ์เข้าถึงส่วนจัดการผู้ใช้งาน
-        </p>
+        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white mb-2">Access Restricted</h2>
+        <p className="text-zinc-500 dark:text-zinc-400 max-w-md">คุณไม่มีสิทธิ์เข้าถึงส่วนจัดการผู้ใช้งาน</p>
       </div>
     );
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+    <div className="space-y-6 animate-fade-in font-prompt">
+      {/* Header */}
+      {/* ✅ เปลี่ยน bg เป็น zinc-900/black */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-black p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors duration-300">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Shield className="text-indigo-600" /> จัดการผู้ใช้งาน
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
+            <Shield className="text-indigo-600 dark:text-indigo-400" /> จัดการผู้ใช้งาน
           </h2>
-          <p className="text-slate-500 text-sm mt-1">
-            สิทธิ์ปัจจุบัน:{' '}
-            <span className="uppercase font-bold text-indigo-600">
-              {myRole}
-            </span>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
+            สิทธิ์ปัจจุบัน: <span className="uppercase font-bold text-indigo-600 dark:text-indigo-400">{myRole}</span>
           </p>
         </div>
         <div className="relative group flex-1 md:w-64">
-          <Search
-            className="absolute left-3 top-2.5 text-slate-400"
-            size={18}
-          />
+          <Search className="absolute left-3 top-2.5 text-zinc-400" size={18} />
+          {/* Search Input: ใช้ Zinc */}
           <input
             type="text"
             placeholder="ค้นหาชื่อ หรือ ID..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm transition-all focus:ring-2 focus:ring-indigo-100"
+            className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm transition-all focus:bg-white dark:focus:bg-black focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 text-zinc-800 dark:text-white placeholder:text-zinc-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      {/* Table Container */}
+      <div className="bg-white dark:bg-black rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800 overflow-hidden transition-colors duration-300">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-100">
+            <thead className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800">
               <tr>
-                <th className="p-5 pl-6 text-xs font-bold text-slate-500 uppercase">
-                  User Info
-                </th>
-                <th className="p-5 text-xs font-bold text-slate-500 uppercase">
-                  Role
-                </th>
-                <th className="p-5 text-xs font-bold text-slate-500 uppercase">
-                  Status
-                </th>
-                <th className="p-5 pr-6 text-xs font-bold text-slate-500 uppercase text-right">
-                  Actions
-                </th>
+                <th className="p-5 pl-6 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">User Info</th>
+                <th className="p-5 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">Role</th>
+                <th className="p-5 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase">Status</th>
+                <th className="p-5 pr-6 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredUsers.map((u) => {
                 const targetRole = normalizeRole(u.role);
-
-                const canManage =
-                  u.username !== currentUsername &&
-                  canManageUser(myRole, targetRole);
+                const canManage = u.username !== currentUsername && canManageUser(myRole, targetRole);
 
                 return (
-                  <tr
-                    key={u.id}
-                    className="group hover:bg-slate-50/80 transition-colors"
-                  >
+                  <tr key={u.id} className="group hover:bg-zinc-50/80 dark:hover:bg-zinc-900/50 transition-colors">
                     <td className="p-5 pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
-                          {(u.username || '?')
-                            .charAt(0)
-                            .toUpperCase()}
+                        <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-zinc-600 dark:text-zinc-300 text-sm">
+                          {(u.username || '?').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-700">
-                            {u.fullname}
-                          </div>
-                          <div className="text-xs text-slate-400">
-                            @{u.username}
-                          </div>
+                          <div className="font-bold text-zinc-700 dark:text-white">{u.fullname}</div>
+                          <div className="text-xs text-zinc-400 dark:text-zinc-500">@{u.username}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-5">
-                      <RoleBadge role={u.role} />
-                    </td>
-                    <td className="p-5">
-                      <StatusBadge status={u.status || 'active'} />
-                    </td>
+                    <td className="p-5"><RoleBadge role={u.role} /></td>
+                    <td className="p-5"><StatusBadge status={u.status || 'active'} /></td>
                     <td className="p-5 pr-6 text-right">
                       {canManage && (
                         <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {u.status !== 'active' ? (
-                            // ปุ่มคืนสภาพ
-                            <button
-                              onClick={() =>
-                                handleActionClick(u.id, 'active')
-                              }
-                              className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50"
-                              title="คืนสภาพ"
-                            >
+                            <button onClick={() => handleActionClick(u.id, 'active')} className="p-2 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30" title="คืนสภาพ">
                               <CheckCircle2 size={18} />
                             </button>
                           ) : (
                             <>
-                              {/* ปุ่มพักงาน */}
-                              <button
-                                onClick={() =>
-                                  handleActionClick(u.id, 'suspend')
-                                }
-                                className="p-2 rounded-lg text-orange-500 hover:bg-orange-50"
-                                title="พักงาน"
-                              >
+                              <button onClick={() => handleActionClick(u.id, 'suspend')} className="p-2 rounded-lg text-orange-500 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30" title="พักงาน">
                                 <PauseCircle size={18} />
                               </button>
-                              {/* ปุ่มไล่ออก / ลบ เฉพาะ director */}
                               {myRole === 'director' && (
                                 <>
-                                  <button
-                                    onClick={() =>
-                                      handleActionClick(u.id, 'fire')
-                                    }
-                                    className="p-2 rounded-lg text-red-500 hover:bg-red-50"
-                                    title="ไล่ออก"
-                                  >
+                                  <button onClick={() => handleActionClick(u.id, 'fire')} className="p-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30" title="ไล่ออก">
                                     <Ban size={18} />
                                   </button>
-                                  <button
-                                    onClick={() =>
-                                      handleActionClick(u.id, 'delete')
-                                    }
-                                    className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                    title="ลบถาวร"
-                                  >
+                                  <button onClick={() => handleActionClick(u.id, 'delete')} className="p-2 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20" title="ลบถาวร">
                                     <Trash2 size={18} />
                                   </button>
                                 </>
@@ -385,9 +244,7 @@ export default function UserManager() {
       </div>
       <ConfirmModal
         isOpen={modalConfig.isOpen}
-        onClose={() =>
-          setModalConfig({ ...modalConfig, isOpen: false })
-        }
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
         onConfirm={modalConfig.action}
         title={modalConfig.title}
         message={modalConfig.message}

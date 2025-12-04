@@ -42,18 +42,19 @@ const InputGroup = ({
   disabled = false,
 }: any) => (
   <div>
-    <label className="text-sm font-bold text-slate-700 mb-1.5 block">
+    <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1.5 block">
       {label}
     </label>
     <div className="relative">
       <Icon
-        className="absolute left-3.5 top-3 text-slate-400 pointer-events-none"
+        className="absolute left-3.5 top-3 text-zinc-400 pointer-events-none"
         size={18}
       />
       {type === 'select' && options ? (
         <select
           disabled={disabled}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-slate-700 font-medium appearance-none transition focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 disabled:bg-slate-100 disabled:text-slate-500"
+          // ✅ ปรับสี Input/Select เป็น Zinc
+          className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none text-zinc-700 dark:text-white font-medium appearance-none transition focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 focus:border-indigo-400 disabled:bg-zinc-100 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -68,7 +69,8 @@ const InputGroup = ({
           type={type}
           disabled={disabled}
           required
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl outline-none text-slate-700 font-medium transition focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 disabled:bg-slate-100 disabled:text-slate-500"
+          // ✅ ปรับสี Input เป็น Zinc
+          className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none text-zinc-700 dark:text-white font-medium transition focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 focus:border-indigo-400 disabled:bg-zinc-100 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -85,11 +87,8 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // สำหรับแก้ไข
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Form state
   const [formData, setFormData] = useState<{
     product_code: string;
     product_name: string;
@@ -167,10 +166,8 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
 
   const uploadImageIfNeeded = async (productId: number) => {
     if (!formData.product_image) return;
-
     const fd = new FormData();
     fd.append('image', formData.product_image);
-
     await api.post(`/products/${productId}/image`, fd, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -203,10 +200,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
     try {
       const res = await api.post<Product>('/products', payload);
       const newProduct = res.data;
-
-      // ถ้ามีเลือกรูป -> อัปโหลดตาม product id
       await uploadImageIfNeeded(newProduct.id);
-
       await fetchProducts();
       if (onDataChange) onDataChange();
       closeModal();
@@ -231,7 +225,6 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
     }
 
     setIsSubmitting(true);
-
     const payload = {
       product_code: formData.product_code,
       product_name: formData.product_name,
@@ -242,10 +235,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
 
     try {
       await api.put<Product>(`/products/${editingProduct.id}`, payload);
-
-      // ถ้ามีเลือกรูปใหม่ -> upload image
       await uploadImageIfNeeded(editingProduct.id);
-
       await fetchProducts();
       if (onDataChange) onDataChange();
       closeModal();
@@ -290,30 +280,32 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
 
   if (loading)
     return (
-      <div className="p-10 text-center text-slate-400 animate-pulse">
+      <div className="p-10 text-center text-zinc-400 dark:text-zinc-500 animate-pulse">
         กำลังโหลดข้อมูล...
       </div>
     );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in font-prompt">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* ✅ เปลี่ยน bg เป็น zinc-900 */}
+      <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <Package className="text-indigo-600" /> คลังสินค้า
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
+            <Package className="text-indigo-600 dark:text-indigo-400" /> คลังสินค้า
           </h2>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
           <div className="relative group flex-1 md:w-64">
             <Search
-              className="absolute left-3 top-2.5 text-slate-400"
+              className="absolute left-3 top-2.5 text-zinc-400"
               size={18}
             />
+            {/* ✅ Search Input */}
             <input
               type="text"
               placeholder="ค้นหาสินค้า..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm transition-all focus:bg-white focus:ring-2 focus:ring-indigo-100"
+              className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm transition-all focus:bg-white dark:focus:bg-zinc-800 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 text-zinc-800 dark:text-white placeholder:text-zinc-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -323,7 +315,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
               setEditingProduct(null);
               setShowAddForm(true);
             }}
-            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-700 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-indigo-600 dark:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 flex items-center gap-2 transition-all active:scale-95"
           >
             <Plus size={18} /> เพิ่มสินค้า
           </button>
@@ -335,9 +327,10 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
         {filteredProducts.map((p) => (
           <div
             key={p.id}
-            className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden group flex flex-col relative hover:shadow-md transition-all"
+            // ✅ Product Card: bg-zinc-900
+            className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden group flex flex-col relative hover:shadow-md transition-all"
           >
-            <div className="relative h-48 bg-slate-50 overflow-hidden">
+            <div className="relative h-48 bg-zinc-50 dark:bg-zinc-800 overflow-hidden">
               <img
                 src={
                   p.product_image
@@ -356,7 +349,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
               <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => handleEditClick(p)}
-                  className="p-2 bg-white/90 text-indigo-500 rounded-lg shadow-sm hover:bg-indigo-50 transition"
+                  className="p-2 bg-white/90 dark:bg-zinc-900/90 text-indigo-500 dark:text-indigo-400 rounded-lg shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
                 >
                   <Pencil size={16} />
                 </button>
@@ -364,13 +357,13 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
                   onClick={() =>
                     setDeleteModal({ isOpen: true, id: p.id })
                   }
-                  className="p-2 bg-white/90 text-red-500 rounded-lg shadow-sm hover:bg-red-50 transition"
+                  className="p-2 bg-white/90 dark:bg-zinc-900/90 text-red-500 dark:text-red-400 rounded-lg shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 transition"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
               {p.quantity === 0 ? (
-                <span className="absolute top-2 left-2 bg-slate-800/90 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
+                <span className="absolute top-2 left-2 bg-zinc-800/90 dark:bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">
                   SOLD OUT
                 </span>
               ) : (
@@ -382,26 +375,26 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
               )}
             </div>
             <div className="p-4 flex flex-col flex-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full w-fit mb-2">
+              <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full w-fit mb-2">
                 {p.category || 'Uncategorized'}
               </span>
-              <h3 className="font-bold text-slate-800 text-lg mb-auto line-clamp-2">
+              <h3 className="font-bold text-zinc-800 dark:text-white text-lg mb-auto line-clamp-2">
                 {p.product_name}
               </h3>
               <div className="flex items-end justify-between mt-4">
                 <div>
-                  <p className="text-xs text-slate-400">ราคา</p>
-                  <p className="text-xl font-bold text-indigo-600">
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">ราคา</p>
+                  <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                     ฿{p.price.toLocaleString()}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-slate-400">คงเหลือ</p>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500">คงเหลือ</p>
                   <div
                     className={`flex items-center gap-1 font-bold ${
                       p.quantity === 0
-                        ? 'text-red-500'
-                        : 'text-slate-700'
+                        ? 'text-red-500 dark:text-red-400'
+                        : 'text-zinc-700 dark:text-zinc-300'
                     }`}
                   >
                     <Layers size={14} /> {p.quantity}
@@ -415,15 +408,16 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
 
       {/* Modal Add/Edit */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="font-bold text-slate-800 text-lg">
+        <div className="fixed inset-0 bg-zinc-900/60 dark:bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in">
+          {/* ✅ Modal Container */}
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800">
+            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900">
+              <h3 className="font-bold text-zinc-800 dark:text-white text-lg">
                 {editingProduct ? 'แก้ไขรายละเอียดสินค้า' : 'เพิ่มสินค้าใหม่'}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                 disabled={isSubmitting}
               >
                 <X size={24} />
@@ -502,10 +496,10 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
 
                 {/* อัปโหลดรูป */}
                 <div>
-                  <label className="text-sm font-bold text-slate-700 mb-2 block">
+                  <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2 block">
                     รูปภาพสินค้า
                   </label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-2xl h-48 relative overflow-hidden bg-slate-50 hover:bg-slate-100 transition-colors group cursor-pointer">
+                  <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-2xl h-48 relative overflow-hidden bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors group cursor-pointer">
                     <input
                       type="file"
                       accept="image/*"
@@ -519,7 +513,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
                         alt="Preview"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-indigo-500">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400">
                         <ImageIcon size={48} />
                         <span className="text-xs font-bold mt-2">
                           คลิกเพื่ออัปโหลด
@@ -529,12 +523,12 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 bg-slate-50 flex justify-end gap-3 border-t border-slate-100">
+              <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-900 flex justify-end gap-3 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
+                  className="px-5 py-2 text-zinc-500 dark:text-zinc-400 font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition disabled:opacity-50"
                 >
                   ยกเลิก
                 </button>
@@ -544,7 +538,7 @@ export default function ProductManager({ onDataChange }: ProductManagerProps) {
                   className={`px-6 py-2 rounded-xl font-bold shadow-lg transition flex items-center gap-2 ${
                     isSubmitting
                       ? 'bg-indigo-400 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      : 'bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white'
                   }`}
                 >
                   {isSubmitting ? (
