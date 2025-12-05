@@ -188,8 +188,8 @@ export default function Dashboard() {
         {/* ✅ Mobile Header: ปรับสีพื้นหลังและ Border ใน Dark Mode */}
         <header className="md:hidden h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-linear-to-tr from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-              9
+            <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-indigo-200/50 border-2 border-white ring-2 ring-indigo-50 dark:ring-zinc-800 dark:border-zinc-700">
+              <img src={"https://img.shop9bath.online/og-logo.jfif"} alt="Shop9Bath Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-slate-800 dark:text-white">Shop9Bath</span>
           </div>

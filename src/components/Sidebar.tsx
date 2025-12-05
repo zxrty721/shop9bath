@@ -1,5 +1,4 @@
 import { LogOut, X, Moon, Sun } from 'lucide-react'; 
-import logo from '/og-9bath.jfif';
 import { useTheme } from '../contexts/ThemeContext'; 
 
 interface SidebarProps {
@@ -38,10 +37,10 @@ export default function Sidebar({ activeTab, setActiveTab, menuItems, userRole, 
         <div className="p-6 pb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl overflow-hidden shadow-lg shadow-indigo-200/50 border-2 border-white ring-2 ring-indigo-50 dark:ring-zinc-800 dark:border-zinc-700">
-              <img src={logo} alt="Shop9Bath Logo" className="w-full h-full object-cover" />
+              <img src={"https://img.shop9bath.online/og-logo.jfif"} alt="Shop9Bath Logo" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-zinc-800 dark:text-white tracking-tight leading-none">Shop9Bath</h1>
+              <p className="text-[15px] text-black dark:text-white font-bold uppercase tracking-widest mt-0.5">Shop9Bath</p>
               <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest mt-0.5">Enterprise</p>
             </div>
           </div>

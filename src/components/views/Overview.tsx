@@ -66,46 +66,58 @@ export default function Overview({ stats, loading }: OverviewProps) {
     'day' | 'month' | 'year' | 'all'
   >('day');
 
+  // ✅ ฟังก์ชันคำนวณจำนวนออเดอร์ (รองรับทุก field ที่เป็นไปได้)
   const getTotalOrders = () => {
+    // ถ้า stats ไม่มีค่า (เช่น loading อยู่) ให้คืน 0
+    if (!stats) return 0;
+
+    // เนื่องจาก Rust Backend อาจส่งมาหลายชื่อ field หรือเรา map type ผิด
+    // เราจะ cast เป็น any เพื่อเช็คทุกชื่อที่เป็นไปได้
     const anyStats = stats as any;
+    
+    // ลองหาค่าจาก field ต่างๆ ที่ backend อาจส่งมา
     return (
-      anyStats.total_orders ??
-      anyStats.total_orders_count ??
-      anyStats.orders_count ??
-      0
+      anyStats.total_orders ??        // ชื่อมาตรฐาน
+      anyStats.total_orders_count ??  // ชื่อแบบยาว
+      anyStats.orders_count ??        // ชื่อย่อ
+      anyStats.count ??               // ชื่อสั้นสุด
+      0                               // ถ้าไม่เจอเลย
     );
   };
 
   const currentSales = useMemo(() => {
+    // ป้องกัน stats เป็น null/undefined
+    if (!stats) return { title: 'ยอดขายวันนี้', value: 0, sub: 'Daily Revenue' };
+
     switch (salesPeriod) {
       case 'day':
         return {
           title: 'ยอดขายวันนี้',
-          value: stats.today_sales,
+          value: stats.today_sales || 0,
           sub: 'Daily Revenue',
         };
       case 'month':
         return {
           title: 'ยอดขายเดือนนี้',
-          value: stats.monthly_sales,
+          value: stats.monthly_sales || 0,
           sub: 'Monthly Revenue',
         };
       case 'year':
         return {
           title: 'ยอดขายปีนี้',
-          value: stats.yearly_sales,
+          value: stats.yearly_sales || 0,
           sub: 'Yearly Revenue',
         };
       case 'all':
         return {
           title: 'ยอดขายรวมทั้งหมด',
-          value: stats.total_sales,
+          value: stats.total_sales || 0,
           sub: 'Total Revenue',
         };
       default:
         return {
           title: 'ยอดขายวันนี้',
-          value: stats.today_sales,
+          value: stats.today_sales || 0,
           sub: 'Daily Revenue',
         };
     }
@@ -158,6 +170,7 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="จำนวนออเดอร์รวม"
+          // ✅ เรียกใช้ฟังก์ชันที่แก้แล้ว
           value={getTotalOrders()}
           subtitle="Total Transactions"
           icon={ShoppingBag}
@@ -166,7 +179,7 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="รายได้สะสม (All Time)"
-          value={stats.total_sales}
+          value={stats?.total_sales || 0}
           subtitle="Lifetime Revenue"
           icon={TrendingUp}
           color="from-emerald-500 to-teal-600 bg-emerald-500"
@@ -181,7 +194,7 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="สินค้าในคลัง"
-          value={stats.product_count}
+          value={stats?.product_count || 0}
           subtitle="รายการสินค้าทั้งหมด"
           icon={Package}
           color="from-orange-400 to-amber-500 bg-orange-400"
@@ -189,15 +202,15 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="สินค้าใกล้หมด"
-          value={stats.low_stock_count}
+          value={stats?.low_stock_count || 0}
           subtitle={
-            stats.low_stock_count > 0
+            (stats?.low_stock_count || 0) > 0
               ? '⚠️ ควรเติมสต็อกทันที'
               : 'สต็อกปกติ'
           }
           icon={AlertTriangle}
           color={
-            stats.low_stock_count > 0
+            (stats?.low_stock_count || 0) > 0
               ? 'from-red-500 to-rose-600 bg-red-500'
               : 'from-zinc-400 to-slate-500 bg-zinc-400'
           }
@@ -205,7 +218,7 @@ export default function Overview({ stats, loading }: OverviewProps) {
         <StatCard
           loading={loading}
           title="ผู้ใช้งานระบบ"
-          value={stats.user_count}
+          value={stats?.user_count || 0}
           subtitle="Active Accounts"
           icon={Users}
           color="from-cyan-500 to-sky-600 bg-cyan-500"
