@@ -40,18 +40,20 @@ export interface Order {
 }
 
 export interface DashboardStats {
-  total_sales: number;
-  total_orders: number;
-  product_count: number;
   user_count: number;
   low_stock_count: number;
+  total_orders: number;
   today_sales: number;
   monthly_sales: number;
   yearly_sales: number;
+  total_sales: number;
+  // ✅ เพิ่มบรรทัดนี้ครับ เพื่อแก้ Error product_count
+  product_count?: number;
 }
 
-/** response ใหม่จาก /orders (backend ตัวล่าสุด) */
 export interface OrdersResponse {
   orders: Order[];
   total_amount: number;
+  month: number;
+  year: number;
 }
