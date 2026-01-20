@@ -4,26 +4,24 @@ import { Info, Facebook } from "lucide-react";
 const TEAM_MEMBERS = [
   {
     id: 1,
-    name: "ชื่อ-นามสกุล (คนที่ 1)",
-    role: "Full Stack Developer",
-    image: "https://pub.shop9bath.online/profile-1.jpg", // ใส่ Link รูปจริง
-    facebook: "https://facebook.com/your-profile-1",
+    name: "นายอโนชา ปิติรัตนากร",
+    role: "Developer", // สามารถแก้ไขตำแหน่งได้ครับ
+    image: "https://img.shop9bath.online/jel.jpg", // ตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ public
+    facebook: "https://facebook.com", // ใส่ Link Facebook จริงที่นี่
   },
   {
     id: 2,
-    name: "ชื่อ-นามสกุล (คนที่ 2)",
-    role: "Frontend Developer",
-    image:
-      "https://ui-avatars.com/api/?name=Member+2&background=random&size=200",
-    facebook: "https://facebook.com/your-profile-2",
+    name: "นางสาวพัชรพร เทศวัง",
+    role: "Developer",
+    image: "https://img.shop9bath.online/new.jpg",
+    facebook: "https://facebook.com",
   },
   {
     id: 3,
-    name: "ชื่อ-นามสกุล (คนที่ 3)",
+    name: "นางสาวฐิติวรดา พรหมประเสริฐ",
     role: "System Analyst",
-    image:
-      "https://ui-avatars.com/api/?name=Member+3&background=random&size=200",
-    facebook: "https://facebook.com/your-profile-3",
+    image: "https://img.shop9bath.online/thi.jpg",
+    facebook: "https://facebook.com",
   },
 ];
 
@@ -58,6 +56,7 @@ export default function About() {
                   alt={member.name}
                   className="w-full h-full rounded-full object-cover border-4 border-white dark:border-zinc-900 bg-white dark:bg-zinc-800"
                   onError={(e) => {
+                    // ถ้าโหลดรูปไม่ได้ จะใช้รูป Placeholder แทน
                     e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random&size=200`;
                   }}
                 />
