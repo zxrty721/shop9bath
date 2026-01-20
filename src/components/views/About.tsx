@@ -5,23 +5,23 @@ const TEAM_MEMBERS = [
   {
     id: 1,
     name: "นายอโนชา ปิติรัตนากร",
-    role: "Developer", // สามารถแก้ไขตำแหน่งได้ครับ
+    role: "Backend Developer", // สามารถแก้ไขตำแหน่งได้ครับ
     image: "https://img.shop9bath.online/jel.jpg", // ตรวจสอบว่าไฟล์อยู่ในโฟลเดอร์ public
-    facebook: "https://facebook.com", // ใส่ Link Facebook จริงที่นี่
+    facebook: "https://www.facebook.com/gj.anocha.2024", // ใส่ Link Facebook จริงที่นี่
   },
   {
     id: 2,
     name: "นางสาวพัชรพร เทศวัง",
-    role: "Developer",
+    role: "Web designer",
     image: "https://img.shop9bath.online/new.jpg",
-    facebook: "https://facebook.com",
+    facebook: "https://www.facebook.com/phatcharaporn.thtwang",
   },
   {
     id: 3,
     name: "นางสาวฐิติวรดา พรหมประเสริฐ",
-    role: "System Analyst",
+    role: "Frontend Developer",
     image: "https://img.shop9bath.online/thi.jpg",
-    facebook: "https://facebook.com",
+    facebook: "https://www.facebook.com/thiti.tp.2025",
   },
 ];
 
